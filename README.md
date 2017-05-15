@@ -25,9 +25,10 @@ Quick start guide
 -----------------
 Short examples for the implemented SCEP functions
 
-####Download CA certificate (GetCACert operation)
+#### Download CA certificate (GetCACert operation)
 To communicate with the SCEP server the client needs the certificate of SCEP server.
-```
+
+```objc
 NSError* error; //MscSCEP informs you about the errors via NSError
 NSString* documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]; //path for the document directory
 MscSCEP* scepClient = [[MscSCEP alloc] initWithURL:[NSURL URLWithString:@"http://teszt.e-szigno.hu/scep"]]; //initialize client library with the URL of scep server
@@ -42,11 +43,13 @@ if (nil != error) {
     NSLog(@"error occured: %d", error.code); //check NSError
 }
 ```
+
 The number of certificates depends on the type of SCEP server. If the client directly communicates with the CA, the array should contain only one certificate. In case where a RA exist, the array can contain multiple certificate. For other SCEP operations you should use the first certificate in the array. 
 
-####Certificate Enrollment (PKCSReq operation)
+#### Certificate Enrollment (PKCSReq operation)
 To request a certificate the client needs a RSA key and a self-signed certificate.
-```
+
+```objc
 NSError* error; //MscSCEP informs you about the errors via NSError
 NSString* documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]; //path for the document directory
     
@@ -114,9 +117,10 @@ if (response.pkiStatus == SCEPPKIStatus_PENDING) { //check response status
 ```
 
 
-####Certificate Access (GetCert operation)
+#### Certificate Access (GetCert operation)
 According to the SCEP specification, the client does not have to store its own certificate, it can download it from the server if the serial number and the issuer of certificate is known. 
-```
+
+```objc
 NSError* error; //MscSCEP informs you about the errors via NSError
 NSString* documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]; //path for the document directory
 NSString* rsaPath = [documentPath stringByAppendingPathComponent:@"rsa.key"]; //path for your saved RSA key
@@ -136,9 +140,10 @@ if (nil != error) {
 }
 ```
 
-####CRL Access (GetCRL operation)
+#### CRL Access (GetCRL operation)
 To download a certificate revocation list the client needs a RSA key, a certificate (it can be self-signed) and needs to know the serial number and the issuer of the related certificate 
-```
+
+```objc
 NSError* error; //MscSCEP informs you about the errors via NSError
 NSString* documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]; //path for the document directory
 NSString* rsaPath = [documentPath stringByAppendingPathComponent:@"rsa.key"]; //path for your saved RSA key
@@ -167,16 +172,19 @@ if (nil != error) {
 
 Public interfaces
 ----------
-###MscSCEP
+### MscSCEP
 The main client functions of SCEP were implemented in **MscSCEP** interface.
 
-####Instance methods
+#### Instance methods
 ----------
-```- (id)initWithURL:(NSURL*)_url```
+
+```objc
+- (id)initWithURL:(NSURL*)_url
+```
 
 Returns an initialized MscSCEP object.
 
-#####Parameters:
+##### Parameters:
 _url: 
 : URL of SCEP server
 
@@ -186,11 +194,13 @@ _url:
 
 ----------
 
-```- (NSArray*)downloadCACertificate:(NSError**)error```
+```objc
+- (NSArray*)downloadCACertificate:(NSError**)error
+```
 
 Downloads the certificate of the SCEP server, which is required for the communication between the server and the client. The returned NSArray contains the certificate(s) of SCEP server.
 
-#####Parameters:
+##### Parameters:
 error: 
 : If an error occurs, upon return contains an NSError object that describes the problem. If you are not interested in possible errors, pass in NULL.
 
@@ -200,11 +210,13 @@ error:
 
 ----------
 
-```- (MscSCEPResponse*)enrolWithRSAKey:(MscRSAKey*)rsaKey certificateSigningRequest:(MscCertificateSigningRequest*)certificateSigningRequest certificate:(MscCertificate*)certificate caCertificate:(MscCertificate*)caCertificate createPKCS12:(BOOL)createPKCS12 pkcs12Password:(NSString*)pkcs12Password error:(NSError**)error```
+```objc
+- (MscSCEPResponse*)enrolWithRSAKey:(MscRSAKey*)rsaKey certificateSigningRequest:(MscCertificateSigningRequest*)certificateSigningRequest certificate:(MscCertificate*)certificate caCertificate:(MscCertificate*)caCertificate createPKCS12:(BOOL)createPKCS12 pkcs12Password:(NSString*)pkcs12Password error:(NSError**)error
+```
 
 Wraps your certificate signing request in PKCS7 format, encrypts it for the SCEP server and signs it with your certificate and RSA key. Sends this SCEP message to the server and decrypts the response. If the enrollment was successful, the returned MscSCEPResponse instance contains your certificate.
 
-#####Parameters:
+##### Parameters:
 rsaKey: 
 : RSA key (MscRSAKey instance) which you can generate or load from filesystem.
 
@@ -215,7 +227,7 @@ certificate:
 : Certificate (MscCertificate instance) which you can generate or load from filesystem.
 
 caCertificate:
-: Certificate of CA (MscCertificate instance) which you can download with ```downloadCACertificate``` method or load from filesystem.
+: Certificate of CA (MscCertificate instance) which you can download with `downloadCACertificate` method or load from filesystem.
 
 createPKCS12:
 : BOOL value, if YES the method creates your PKCS12 object from your RSA key and the enrolled certificate, which will be protected by the given password.
@@ -232,11 +244,13 @@ error:
 
 ----------
 
-```-(MscSCEPResponse*)downloadCRLWithRSAKey:(MscRSAKey*)rsaKey certificate:(MscCertificate*)certificate issuer:(MscCertificateSubject*)issuer serial:(NSString*)serial caCertificate:(MscCertificate*)caCertificate error:(NSError**)error```
+```objc
+-(MscSCEPResponse*)downloadCRLWithRSAKey:(MscRSAKey*)rsaKey certificate:(MscCertificate*)certificate issuer:(MscCertificateSubject*)issuer serial:(NSString*)serial caCertificate:(MscCertificate*)caCertificate error:(NSError**)error
+```
 
 Wraps the given issuer and serial number informations in PKCS7 format, encrypts it for the SCEP server and signs it with your certificate and RSA key. Sends this SCEP message to the server and decrypts the response. If the request was successful, the returned MscSCEPResponse instance contains your certificate revocation list. 
 
-#####Parameters:
+##### Parameters:
 rsaKey: 
 : RSA key (MscRSAKey instance) which you can generate or load from filesystem.
 
@@ -244,13 +258,13 @@ certificate:
 : Certificate (MscCertificate instance) which you can generate or load from filesystem.
 
 issuer:
-: Issuer (MscCertificateSubject instance) of the related certificate, which you can get from the certificate with ```getIssuerWithError``` method.
+: Issuer (MscCertificateSubject instance) of the related certificate, which you can get from the certificate with `getIssuerWithError` method.
 
 serial:
-: Serial number (NSString instance) of the related certificate, which you can get from the certificate with ```getSerialWithError``` method.
+: Serial number (NSString instance) of the related certificate, which you can get from the certificate with `getSerialWithError` method.
 
 caCertificate:
-: Certificate of CA (MscCertificate instance) which you can download with ```downloadCACertificate``` method or load from filesystem.
+: Certificate of CA (MscCertificate instance) which you can download with `downloadCACertificate` method or load from filesystem.
 
 error:
 : If an error occurs, upon return contains an NSError object that describes the problem. If you are not interested in possible errors, pass in NULL.
@@ -261,11 +275,13 @@ error:
 
 ----------
 
-```-(MscSCEPResponse*)downloadCertificateWithRSAKey:(MscRSAKey*)rsaKey issuer:(MscCertificateSubject*)issuer serial:(NSString*)serial caCertificate:(MscCertificate*)caCertificate error:(NSError**)error```
+```objc
+-(MscSCEPResponse*)downloadCertificateWithRSAKey:(MscRSAKey*)rsaKey issuer:(MscCertificateSubject*)issuer serial:(NSString*)serial caCertificate:(MscCertificate*)caCertificate error:(NSError**)error
+```
 
 Wraps the given issuer and serial number informations in PKCS7 format, encrypts it for the SCEP server and signs it with a self-signed certificate and your RSA key. Sends this SCEP message to the server and decrypts the response. If the request was successful, the returned MscSCEPResponse instance contains your certificate. 
 
-#####Parameters:
+##### Parameters:
 rsaKey: 
 : RSA key (MscRSAKey instance) which you can generate or load from filesystem.
 
@@ -273,13 +289,13 @@ certificate:
 : Certificate (MscCertificate instance) which you can generate or load from filesystem.
 
 issuer:
-: Issuer (MscCertificateSubject instance) of your certificate, which you can get from the certificate with ```getIssuerWithError``` method.
+: Issuer (MscCertificateSubject instance) of your certificate, which you can get from the certificate with `getIssuerWithError` method.
 
 serial:
-: Serial number (NSString instance) of your certificate, which you can get from the certificate with ```getSerialWithError``` method.
+: Serial number (NSString instance) of your certificate, which you can get from the certificate with `getSerialWithError` method.
 
 caCertificate:
-: Certificate of CA (MscCertificate instance) which you can download with ```downloadCACertificate``` method or load from filesystem.
+: Certificate of CA (MscCertificate instance) which you can download with `downloadCACertificate` method or load from filesystem.
 
 error:
 : If an error occurs, upon return contains an NSError object that describes the problem. If you are not interested in possible errors, pass in NULL.
@@ -290,12 +306,15 @@ error:
 
 ----------
 
-###MscResponse
+### MscResponse
 Most of MscSCEP methods return with MscResponse instance which contains status informations and returned objects (e.g. certificate, certificate revocation list, pkcs12 object, etc.)
 
-####Instance methods
+#### Instance methods
 ----------
-```- (SCEPMessage)messageType```
+
+```objc
+- (SCEPMessage)messageType
+```
 
 Returns with the type of SCEP message, which can be CertRep, PKCSReq, GetCert, etc. 
 
@@ -304,7 +323,9 @@ Returns with the type of SCEP message, which can be CertRep, PKCSReq, GetCert, e
 ***Declared in***: MscResponse.h
 
 ----------
-```- (SCEPPKIStatus)pkiStatus```
+```objc
+- (SCEPPKIStatus)pkiStatus
+```
 
 Returns with the status of enrollment, which can be SUCCESS, FAILURE and PENDING. 
 
@@ -313,7 +334,9 @@ Returns with the status of enrollment, which can be SUCCESS, FAILURE and PENDING
 ***Declared in***: MscResponse.h
 
 ----------
-```- (SCEPFailInfo)failInfo```
+```objc
+- (SCEPFailInfo)failInfo
+```
 
 Returns with the reason of failure if an error occured during the communication.
 
@@ -322,7 +345,9 @@ Returns with the reason of failure if an error occured during the communication.
 ***Declared in***: MscResponse.h
 
 ----------
-```- (NSArray*)certificates```
+```objc
+- (NSArray*)certificates
+```
 
 Returns with your enrolled certificates.
 
@@ -331,7 +356,9 @@ Returns with your enrolled certificates.
 ***Declared in***: MscResponse.h
 
 ----------
-```- (NSArray*)certificateRevocationLists```
+```objc
+- (NSArray*)certificateRevocationLists
+```
 
 Returns with certificate revocation list.
 
@@ -340,7 +367,9 @@ Returns with certificate revocation list.
 ***Declared in***: MscResponse.h
 
 ----------
-```- (MscPKCS12*)pkcs12```
+```objc
+- (MscPKCS12*)pkcs12
+```
 
 Returns with enroller PKCS12 object.
 
@@ -349,33 +378,35 @@ Returns with enroller PKCS12 object.
 ***Declared in***: MscResponse.h
 
 ----------
-```- (void)pollWithError:(NSError**)error```
+```objc
+- (void)pollWithError:(NSError**)error
+```
 
-In case ```pkiStatus``` is PENDING, you are able to poll the server and check the enrollment process result.
+In case `pkiStatus` is PENDING, you are able to poll the server and check the enrollment process result.
 
-#####Parameters:
+##### Parameters:
 error:
 : If an error occurs, upon return contains an NSError object that describes the problem. If you are not interested in possible errors, pass in NULL.
 
 ***Declared in***: MscResponse.h
 
 ----------
-####Constants
+#### Constants
 
-#####Content-Types
+##### Content-Types
 MIME_GETCA and MIME_GETCA_RA: 
-: Content-Type of ```downloadCACertificate``` operation
+: Content-Type of `downloadCACertificate` operation
 
 MIME_PKI:
-: Content-Type of ```enrol```, ```downloadCRL``` and ```downloadCertificate``` operations
+: Content-Type of `enrol`, `downloadCRL` and `downloadCertificate` operations
 
 ***Declared in***: MscResponse.h
 
 ----------
-#####SCEP Message Type
+##### SCEP Message Type
 These values represent the type of SCEP messages. According to the SCEP specification, the following message types were defined:
 
-```
+```objc
 typedef NS_ENUM(NSUInteger, SCEPMessage) {
     SCEPMessage_None            = 0,    //undefined
     SCEPMessage_CertRep         = 3,    //Response to certificate or CRL request
@@ -386,10 +417,10 @@ typedef NS_ENUM(NSUInteger, SCEPMessage) {
 };
 ```
 ----------
-#####SCEP pki status
+##### SCEP pki status
 These values represent the transaction status information. According to the SCEP specification, the following pki statuses were defined:
 
-```
+```objc
 typedef NS_ENUM(NSUInteger, SCEPPKIStatus) {
     SCEPPKIStatus_SUCCESS   = 0,    //request granted
     SCEPPKIStatus_FAILURE   = 2,    //request rejected
@@ -398,10 +429,10 @@ typedef NS_ENUM(NSUInteger, SCEPPKIStatus) {
 ```
 
 ----------
-#####SCEP failInfo
+##### SCEP failInfo
 These values represent the reason of failure. According to the SCEP specification, the following failInfos were defined:
 
-```
+```objc
 typedef NS_ENUM(NSUInteger, SCEPFailInfo) {
     SCEPFailInfo_BadAlg             = 0,    //Unrecognized or unsupported algorithm identifier
     SCEPFailInfo_BadMessageCheck    = 1,    //integrity check failed
